@@ -1,0 +1,3 @@
+import { PropsWithChildren } from 'react'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ScrollView, StyleSheet, View } from 'react-native'; import { palette } from '@/constants/Colors'; import { useColorScheme } from '@/components/useColorScheme';
+export function Screen({children}:PropsWithChildren){const c=palette[useColorScheme()??'light'];return <SafeAreaView style={[s.safe,{backgroundColor:c.canvas}]} edges={['top']}><ScrollView contentContainerStyle={s.scroll}><View style={s.content}>{children}</View></ScrollView></SafeAreaView>}
+const s=StyleSheet.create({safe:{flex:1},scroll:{flexGrow:1},content:{flex:1,padding:20,gap:16}});
