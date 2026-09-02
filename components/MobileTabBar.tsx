@@ -9,7 +9,7 @@ const glyphs: Record<string, string> = { index: '⌂', finances: '▤', reports:
 export function MobileTabBar({ state, descriptors, navigation }: any) {
   const c = palette[useColorScheme() ?? 'light'];
   return <View style={[styles.bar, { backgroundColor: c.surface, borderTopColor: c.border }]}>
-    {state.routes.map((route, index) => {
+    {state.routes.map((route: any, index: number) => {
       const focused = state.index === index; const options = descriptors[route.key].options;
       return <Pressable key={route.key} accessibilityRole="button" accessibilityState={{ selected: focused }} accessibilityLabel={options.tabBarAccessibilityLabel ?? labels[route.name]} onPress={() => { const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true }); if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params); }} style={styles.item}>
         <Text style={[styles.glyph, { color: focused ? c.primary : c.textMuted }]}>{glyphs[route.name]}</Text><Text style={[styles.label, { color: focused ? c.primary : c.textMuted }]}>{labels[route.name]}</Text>
