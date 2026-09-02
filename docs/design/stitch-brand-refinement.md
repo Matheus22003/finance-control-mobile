@@ -72,3 +72,35 @@ promocionais, filtros, gráficos ou mudanças de informação.
 - A navegação preserva o lançamento rápido e o domínio de finanças
   compartilhadas (Amigos).
 - Estados de sucesso, atenção e erro têm texto ou ícone além de cor.
+
+## Correção de divergências encontradas
+
+Após a primeira revisão, o Stitch ainda mostrou o ícone genérico de carteira em
+parte dos cabeçalhos e omitiu **Amigos** da barra inferior. Este comando deve
+ser enviado como uma segunda instrução, sem recriar as telas:
+
+```text
+Faça apenas uma correção de fidelidade nas telas refinadas existentes; não
+altere layout, conteúdo, dados, valores, tipografia, cores, tema, fluxos,
+componentes ou qualquer outra informação.
+
+1. Remova o ícone genérico de carteira (account_balance_wallet) de TODO
+cabeçalho, tela de login e navegação. Use exclusivamente a marca oficial do
+Finance Control: quadrado teal de 36px com raio 11px e duas barras brancas
+horizontais curtas; ao lado, wordmark completo "Finance" em #132027 peso 500
++ "Control" em #087F73 peso 800. No tema escuro, preserve contraste com texto
+#F1F5F9 e teal #2DD4BF. Nunca use símbolo alternativo, monograma, gradiente ou
+ícone de carteira.
+
+2. Corrija a barra inferior de cada tela autenticada: Início, Finanças, botão
+central + para adicionar lançamento, Relatórios, Dívidas e Amigos. O perfil e
+as configurações permanecem no avatar do cabeçalho. Quando seis destinos não
+couberem com rótulos legíveis em 390px, use o rótulo curto "Amigos" e ícones
+lineares de 24px, preservando toque mínimo de 48px; não esconda Amigos nem
+substitua-o por Perfil/Planejamento.
+
+Aplique essas duas correções de forma consistente nos temas claro e escuro e
+nas telas Login, Início, Lançamentos, Criar lançamento, Planejamento, Dívidas,
+Relatórios, Notificações e Perfil e segurança. Entregue somente a revisão das
+telas existentes.
+```
