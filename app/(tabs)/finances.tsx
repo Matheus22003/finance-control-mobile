@@ -1,3 +1,36 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'; import { router } from 'expo-router'; import { Brand } from '@/components/Brand'; import { Screen } from '@/components/Screen'; import { palette, radius } from '@/constants/Colors'; import { useColorScheme } from '@/components/useColorScheme';
-const entries=[['Mercado Extra','Hoje','− R$ 145,90','Alimentação'],['Salário Tech Corp','Ontem','+ R$ 4.500,00','Renda fixa'],['Starbucks','Ontem','− R$ 24,50','Alimentação']];
-export default function Finances(){const c=palette[useColorScheme()??'light'];return <Screen><Brand/><View><Text style={[s.title,{color:c.text}]}>Finanças</Text><Text style={[s.muted,{color:c.textMuted}]}>Acompanhe cada movimentação com clareza.</Text></View><View style={s.filters}><Chip text="Este mês" c={c}/><Chip text="Categorias" c={c}/></View>{entries.map(([name,date,value,category])=><View key={name} style={[s.entry,{backgroundColor:c.surface,borderColor:c.border}]}><View style={{gap:3}}><Text style={[s.name,{color:c.text}]}>{name}</Text><Text style={[s.muted,{color:c.textMuted}]}>{date} · {category}</Text></View><Text style={[s.value,{color:value.startsWith('+')?c.positive:c.text}]}>{value}</Text></View>)}<Pressable onPress={()=>router.push('/create')} style={[s.cta,{backgroundColor:c.primary}]}><Text style={s.ctaText}>+ Adicionar lançamento</Text></Pressable></Screen>}; function Chip({text,c}:{text:string;c:any}){return <View style={[s.chip,{backgroundColor:c.surfaceMuted}]}><Text style={{fontFamily:'Inter_700Bold',fontSize:12,color:c.text}}>{text}⌄</Text></View>};const s=StyleSheet.create({title:{fontFamily:'Inter_800ExtraBold',fontSize:28,letterSpacing:-.8},muted:{fontFamily:'Inter_400Regular',fontSize:14},filters:{flexDirection:'row',gap:8},chip:{borderRadius:999,paddingVertical:9,paddingHorizontal:12},entry:{borderWidth:1,borderRadius:radius.component,padding:16,flexDirection:'row',justifyContent:'space-between'},name:{fontFamily:'Inter_700Bold',fontSize:15},value:{fontFamily:'Inter_700Bold',fontSize:14,alignSelf:'center'},cta:{borderRadius:radius.control,minHeight:50,alignItems:'center',justifyContent:'center',marginTop:8},ctaText:{fontFamily:'Inter_700Bold',color:'#fff'}});
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+
+import { Brand } from '@/components/Brand';
+import { Screen } from '@/components/Screen';
+import { useColorScheme } from '@/components/useColorScheme';
+import { getTransactions, isExpense, type Expense, type Income } from '@/core/api/finance-api';
+import { useAuth } from '@/core/auth/auth-context';
+import { palette, radius } from '@/constants/Colors';
+
+const money = (value: number | string) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value));
+
+export default function Finances() {
+  const colors = palette[useColorScheme() ?? 'light'];
+  const { authorizedRequest } = useAuth();
+  const [entries, setEntries] = useState<Array<Income | Expense>>([]);
+  const [loading, setLoading] = useState(true);
+  const load = useCallback(async () => {
+    try { setEntries(await authorizedRequest(getTransactions)); }
+    catch { Alert.alert('Não foi possível carregar os lançamentos', 'Tente novamente em instantes.'); }
+    finally { setLoading(false); }
+  }, [authorizedRequest]);
+  useEffect(() => { void load(); }, [load]);
+
+  return <Screen refreshControl={<RefreshControl refreshing={loading} onRefresh={() => { setLoading(true); void load(); }} tintColor={colors.primary} />}>
+    <Brand /><View><Text style={[styles.title, { color: colors.text }]}>Finanças</Text><Text style={[styles.muted, { color: colors.textMuted }]}>Acompanhe cada movimentação com clareza.</Text></View>
+    {loading && !entries.length ? <ActivityIndicator color={colors.primary} /> : entries.map(entry => {
+      const expense = isExpense(entry);
+      return <View key={`${expense ? 'expense' : 'income'}-${entry.id}`} style={[styles.entry, { backgroundColor: colors.surface, borderColor: colors.border }]}><View style={{ gap: 3, flex: 1 }}><Text style={[styles.name, { color: colors.text }]}>{entry.description}</Text><Text style={[styles.muted, { color: colors.textMuted }]}>{new Date(`${entry.transactionDate}T12:00:00`).toLocaleDateString('pt-BR')}{expense ? ` · ${entry.category}` : ' · Receita'}</Text></View><Text style={[styles.value, { color: expense ? colors.text : colors.positive }]}>{expense ? '− ' : '+ '}{money(entry.amount)}</Text></View>;
+    })}
+    {!loading && entries.length === 0 ? <Text style={[styles.muted, { color: colors.textMuted }]}>Ainda não há lançamentos neste período.</Text> : null}
+    <Pressable onPress={() => router.push('/create')} style={[styles.cta, { backgroundColor: colors.primary }]}><Text style={styles.ctaText}>+ Adicionar lançamento</Text></Pressable>
+  </Screen>;
+}
+const styles = StyleSheet.create({ title: { fontFamily: 'Inter_800ExtraBold', fontSize: 28, letterSpacing: -.8 }, muted: { fontFamily: 'Inter_400Regular', fontSize: 14 }, entry: { borderWidth: 1, borderRadius: radius.component, padding: 16, flexDirection: 'row', justifyContent: 'space-between', gap: 12 }, name: { fontFamily: 'Inter_700Bold', fontSize: 15 }, value: { fontFamily: 'Inter_700Bold', fontSize: 14, alignSelf: 'center' }, cta: { borderRadius: radius.control, minHeight: 50, alignItems: 'center', justifyContent: 'center', marginTop: 8 }, ctaText: { fontFamily: 'Inter_700Bold', color: '#fff' } });
