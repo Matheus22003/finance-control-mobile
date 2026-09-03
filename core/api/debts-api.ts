@@ -5,7 +5,7 @@ export type Person = PersonReference & { email: string | null };
 export type DebtShare = { id: string; person: PersonReference; amount: number | string; paidAmount: number | string; remainingAmount: number | string; isPayer: boolean };
 export type Debt = { id: string; description: string; totalAmount: number | string; paidBy: PersonReference; groupId: string | null; category: string; status: string; dueDate: string | null; createdByCurrentUser: boolean; shares: DebtShare[] };
 export type DebtSummary = { totalOwed: number | string; totalToReceive: number | string; openDebtsCount: number | string };
-export type Payment = { id: string; amount: number | string; paymentDate: string; note: string | null; status: string; canConfirm?: boolean; canReject?: boolean; person?: PersonReference };
+export type Payment = { id: string; debtId: string; debtShareId: string; fromPerson: PersonReference; toPerson: PersonReference; amount: number | string; paymentDate: string; note: string | null; status: string; canConfirm: boolean; canReject: boolean };
 export type SimplifiedTransfer = { fromPerson: PersonReference; toPerson: PersonReference; amount: number | string };
 export type Settlement = { totalOpenAmount: number | string; originalTransferCount: number | string; simplifiedTransferCount: number | string; transfers: SimplifiedTransfer[] };
 
@@ -13,6 +13,7 @@ export const getDebtSummary = (token: string) => request<DebtSummary>('/api/v1/d
 export const getDebts = (token: string) => request<Debt[]>('/api/v1/debts', {}, token);
 export const getDebt = (token: string, id: string) => request<Debt>(`/api/v1/debts/${id}`, {}, token);
 export const getDebtPayments = (token: string, id: string) => request<Payment[]>(`/api/v1/debts/${id}/payments`, {}, token);
+export const getPendingPayments = (token: string) => request<Payment[]>('/api/v1/debts/payments/pending-confirmation', {}, token);
 export const getSettlement = (token: string) => request<Settlement>('/api/v1/debts/settlements/simplified', {}, token);
 export const getPeople = (token: string) => request<Person[]>('/api/v1/people', {}, token);
 
