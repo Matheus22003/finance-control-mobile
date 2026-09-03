@@ -1,0 +1,4 @@
+import { PropsWithChildren, type ReactElement } from 'react'; import { SafeAreaView } from 'react-native-safe-area-context'; import { RefreshControlProps, ScrollView, StyleSheet, View } from 'react-native'; import { palette } from '@/constants/Colors'; import { useColorScheme } from '@/components/useColorScheme';
+type ScreenProps = PropsWithChildren<{ refreshControl?: ReactElement<RefreshControlProps> }>;
+export function Screen({ children, refreshControl }: ScreenProps){const c=palette[useColorScheme()??'light'];return <SafeAreaView style={[s.safe,{backgroundColor:c.canvas}]} edges={['top']}><ScrollView refreshControl={refreshControl} contentContainerStyle={s.scroll}><View style={s.content}>{children}</View></ScrollView></SafeAreaView>}
+const s=StyleSheet.create({safe:{flex:1},scroll:{flexGrow:1},content:{flex:1,padding:20,gap:16}});

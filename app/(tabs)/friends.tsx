@@ -1,0 +1,1 @@
+import { Text } from 'react-native'; import { Screen } from '@/components/Screen'; import { Brand } from '@/components/Brand'; export default function Friends(){return <Screen><Brand/><Text style={{fontFamily:'Inter_800ExtraBold',fontSize:28}}>Amigos</Text></Screen>}

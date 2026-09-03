@@ -1,21 +1,35 @@
 # Finance Control Mobile
 
-Aplicativo móvel do Finance Control para Android e iOS, construído com React Native e Expo.
+Aplicativo instalado do Finance Control para Android e iOS, construído com React Native e Expo. Ele consome exclusivamente o BFF público versionado em `/api/v1`; nunca acessa Finance Service, Debt Service, bancos de dados ou provedores de infraestrutura diretamente.
 
-O aplicativo consome exclusivamente o BFF público versionado em `/api/v1`. Ele não acessa Finance Service, Debt Service, bancos de dados, provedores de push ou variáveis de infraestrutura diretamente.
+## Sessão segura
 
-## Estado inicial
+- O access token existe somente em memória.
+- O refresh token é opaco, rotativo e guardado exclusivamente no Android Keystore/iOS Keychain com `expo-secure-store`.
+- Um UUID aleatório de instalação é persistido no mesmo armazenamento seguro e vincula a sessão ao app instalado, sem coletar identificadores de hardware.
+- O app restaura a sessão com `POST /api/v1/auth/mobile/refresh`, faz logout via `POST /api/v1/auth/mobile/logout` e limpa a credencial local mesmo quando estiver offline.
+- O app não usa cookies de navegador, `AsyncStorage` nem `localStorage` para tokens.
 
-Esta primeira entrega estabelece o projeto Expo Router, a estratégia de design e a decisão de arquitetura. A autenticação mobile será implementada antes de qualquer tela que manipule dados financeiros.
+## API
+
+Por padrão, o aplicativo usa o BFF público atual. Para outro ambiente, defina uma URL pública (não é segredo) antes de iniciar o Expo:
+
+```bash
+EXPO_PUBLIC_API_URL=https://seu-bff.example npm run android
+```
+
+Em um dispositivo físico, `localhost` aponta para o próprio aparelho; use uma URL HTTPS alcançável pelo dispositivo ou um túnel de desenvolvimento.
 
 ## Desenvolvimento
 
 ```bash
 npm install
+npm run test
+npx tsc --noEmit
 npm run android
 ```
 
-O desenvolvimento Android pode ser feito localmente sem custo. Publicação em lojas e suporte a iOS dependem de requisitos das respectivas plataformas.
+O primeiro login conectado habilita dashboard, lançamentos e a criação de receitas/despesas reais pelo BFF. As outras áreas continuam como próximos incrementos de produto.
 
 ## Referências
 
