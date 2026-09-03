@@ -29,7 +29,6 @@ export default function DebtCreate() {
       const [nextPeople, nextGroups] = await Promise.all([authorizedRequest(getPeople), authorizedRequest(getGroups)]);
       setPeople(nextPeople);
       setGroups(nextGroups);
-      setSelected(nextPeople.filter(person => person.isCurrentUser).map(person => person.id));
     } catch { Alert.alert('Não foi possível carregar participantes', 'Tente novamente.'); }
     finally { setLoading(false); }
   }, [authorizedRequest]);
@@ -39,7 +38,7 @@ export default function DebtCreate() {
   function toggle(personId: string) { setSelected(current => current.includes(personId) ? current.filter(id => id !== personId) : [...current, personId]); }
 
   async function save() {
-    const total = Number(amount.replace(',', '.'));
+    const total = Number(amount.replace(/\./g, '').replace(',', '.'));
     if (!description.trim() || !Number.isFinite(total) || total <= 0 || !payer || !selected.length) {
       Alert.alert('Revise a dívida', 'Informe descrição, valor e pelo menos um participante.'); return;
     }
