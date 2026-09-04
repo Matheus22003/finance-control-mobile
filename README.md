@@ -29,7 +29,7 @@ npx tsc --noEmit
 npm run android
 ```
 
-O primeiro login conectado habilita dashboard, lançamentos e a criação de receitas/despesas reais pelo BFF. As outras áreas continuam como próximos incrementos de produto.
+O primeiro login conectado habilita dashboard, lançamentos e a criação de receitas/despesas reais pelo BFF. A aba Finanças também consulta orçamento mensal, metas, recorrências e projeção de caixa; criação e atualização desses recursos já usa os contratos reais do BFF.
 
 ## Referências
 
