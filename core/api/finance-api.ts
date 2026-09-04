@@ -17,10 +17,15 @@ export const createIncome = (token: string, input: { description: string; amount
 export const createExpense = (token: string, input: { description: string; amount: number; transactionDate: string; category: string }) => request<Expense>('/api/v1/finance/expenses', { method: 'POST', body: JSON.stringify(input) }, token);
 export const getBudget = (token: string, month: string) => request<MonthlyBudget>(`/api/v1/finance/budgets?month=${encodeURIComponent(month)}`, {}, token);
 export const setBudget = (token: string, category: string, amount: number, month: string) => request<MonthlyBudget>(`/api/v1/finance/budgets/${encodeURIComponent(category)}?month=${encodeURIComponent(month)}`, { method: 'PUT', body: JSON.stringify({ amount }) }, token);
+export const deleteBudget = (token: string, category: string, month: string) => request<void>(`/api/v1/finance/budgets/${encodeURIComponent(category)}?month=${encodeURIComponent(month)}`, { method: 'DELETE' }, token);
 export const getGoals = (token: string) => request<FinancialGoal[]>('/api/v1/finance/goals', {}, token);
 export const createGoal = (token: string, input: { name: string; targetAmount: number; currentAmount: number; targetDate: string }) => request<FinancialGoal>('/api/v1/finance/goals', { method: 'POST', body: JSON.stringify(input) }, token);
+export const updateGoal = (token: string, id: string, input: { name: string; targetAmount: number; currentAmount: number; targetDate: string }) => request<FinancialGoal>(`/api/v1/finance/goals/${id}`, { method: 'PUT', body: JSON.stringify(input) }, token);
+export const deleteGoal = (token: string, id: string) => request<void>(`/api/v1/finance/goals/${id}`, { method: 'DELETE' }, token);
 export const addContribution = (token: string, goalId: string, input: { amount: number; contributionDate: string; note: string | null }) => request<Contribution>(`/api/v1/finance/goals/${goalId}/contributions`, { method: 'POST', body: JSON.stringify(input) }, token);
 export const getRecurring = (token: string) => request<RecurringTransaction[]>('/api/v1/finance/recurring-transactions', {}, token);
 export const createRecurring = (token: string, input: { kind: string; description: string; amount: number; category: string | null; frequency: string; startDate: string; endDate: string | null }) => request<RecurringTransaction>('/api/v1/finance/recurring-transactions', { method: 'POST', body: JSON.stringify(input) }, token);
+export const updateRecurring = (token: string, id: string, input: { description: string; amount: number; category: string | null; endDate: string | null; active: boolean }) => request<RecurringTransaction>(`/api/v1/finance/recurring-transactions/${id}`, { method: 'PUT', body: JSON.stringify(input) }, token);
+export const deleteRecurring = (token: string, id: string) => request<void>(`/api/v1/finance/recurring-transactions/${id}`, { method: 'DELETE' }, token);
 export const getCashFlowProjection = (token: string) => request<CashFlowProjection>('/api/v1/finance/projections/cash-flow', {}, token);
 export function isExpense(transaction: Income | Expense): transaction is Expense { return 'category' in transaction; }
