@@ -1,52 +1,21 @@
-import { request } from './request';
-
-export type Dashboard = {
-  balance: number | string;
-  totalIncome: number | string;
-  totalExpenses: number | string;
-};
-
-export type Income = {
-  id: string;
-  description: string;
-  amount: number | string;
-  transactionDate: string;
-};
-
-export type Expense = {
-  id: string;
-  description: string;
-  amount: number | string;
-  transactionDate: string;
-  category: string;
-};
-
-export async function getDashboard(accessToken: string): Promise<Dashboard> {
-  return request<Dashboard>('/api/v1/dashboard', {}, accessToken);
-}
-
-export async function getTransactions(accessToken: string): Promise<Array<Income | Expense>> {
-  const [incomes, expenses] = await Promise.all([
-    request<Income[]>('/api/v1/finance/incomes', {}, accessToken),
-    request<Expense[]>('/api/v1/finance/expenses', {}, accessToken),
-  ]);
-  return [...incomes, ...expenses].sort((left, right) => right.transactionDate.localeCompare(left.transactionDate));
-}
-
-export async function createIncome(
-  accessToken: string,
-  input: { description: string; amount: number; transactionDate: string },
-): Promise<Income> {
-  return request<Income>('/api/v1/finance/incomes', { method: 'POST', body: JSON.stringify(input) }, accessToken);
-}
-
-export async function createExpense(
-  accessToken: string,
-  input: { description: string; amount: number; transactionDate: string; category: string },
-): Promise<Expense> {
-  return request<Expense>('/api/v1/finance/expenses', { method: 'POST', body: JSON.stringify(input) }, accessToken);
-}
-
-export function isExpense(transaction: Income | Expense): transaction is Expense {
-  return 'category' in transaction;
-}
+import { apiUrl } from './config';
+import { request, ApiError } from './request';
+export type Dashboard={balance:number|string;totalIncome:number|string;totalExpenses:number|string};
+export type Income={id:string;description:string;amount:number|string;transactionDate:string;recurringTransactionId?:string|null;goalAllocatedAmount?:number|string};
+export type Expense={id:string;description:string;amount:number|string;transactionDate:string;category:string;recurringTransactionId?:string|null};
+export type BudgetCategory={category:string;name:string;planned:number|string;spent:number|string;remaining:number|string;usagePercentage:number|string};
+export type MonthlyBudget={referenceMonth:string;totalPlanned:number|string;totalSpent:number|string;totalRemaining:number|string;categories:BudgetCategory[]};
+export type FinancialGoal={id:string;name:string;targetAmount:number|string;currentAmount:number|string;remainingAmount:number|string;progressPercentage:number|string;targetDate:string;status:string;requiredMonthlyContribution:number|string};
+export type Contribution={id:string;amount:number|string;contributionDate:string;note:string|null};
+export type RecurringTransaction={id:string;kind:string;description:string;amount:number|string;category:string|null;frequency:string;startDate:string;nextOccurrenceDate:string;endDate:string|null;active:boolean};
+export type CashFlowMonth={referenceMonth:string;projectedIncome:number|string;projectedExpenses:number|string;projectedNet:number|string;cumulativeBalance:number|string};
+export type CashFlowProjection={referenceDate:string;months:number|string;currentRecordedBalance:number|string;totalProjectedIncome:number|string;totalProjectedExpenses:number|string;projectedCumulativeBalance:number|string;items:CashFlowMonth[]};
+export type ReportOverview={fromMonth:string;toMonth:string;monthCount:number|string;generatedAt:string;finance:{totalIncome:number|string;totalExpenses:number|string;balance:number|string;savingsRatePercentage:number|string;incomeCount:number|string;expenseCount:number|string;months:{referenceMonth:string;totalIncome:number|string;totalExpenses:number|string;balance:number|string}[];expenseCategories:{category:string;name:string;amount:number|string;percentage:number|string}[];topExpenses:{id:string;description:string;amount:number|string;transactionDate:string;category:string;categoryName:string}[]};debts:{totalVolume:number|string;totalOwed:number|string;totalToReceive:number|string;openDebtsCount:number|string;paidDebtsCount:number|string;months:{referenceMonth:string;totalVolume:number|string;totalOwed:number|string;totalToReceive:number|string;debtCount:number|string}[];categories:{category:string;totalVolume:number|string;totalOwed:number|string;totalToReceive:number|string;debtCount:number|string}[];topDebts:{id:string;description:string;category:string;totalAmount:number|string;totalOwed:number|string;totalToReceive:number|string;status:string;dueDate:string|null;createdAt:string}[]};highlights:{averageMonthlyIncome:number|string;averageMonthlyExpenses:number|string;bestBalanceMonth:string|null;highestExpenseCategory:string|null}};
+export async function getDashboard(t:string){return request<Dashboard>('/api/v1/dashboard',{},t)}
+export async function getTransactions(t:string,m?:string){const q=m?`?from=${m}-01&to=${m}-31`:'';const [i,e]=await Promise.all([request<Income[]>(`/api/v1/finance/incomes${q}`,{},t),request<Expense[]>(`/api/v1/finance/expenses${q}`,{},t)]);return [...i,...e].sort((a,b)=>b.transactionDate.localeCompare(a.transactionDate))}
+export const getIncome=(t:string,id:string)=>request<Income>(`/api/v1/finance/incomes/${id}`,{},t);export const getExpense=(t:string,id:string)=>request<Expense>(`/api/v1/finance/expenses/${id}`,{},t);export const updateIncome=(t:string,id:string,x:{description:string;amount:number;transactionDate:string})=>request<Income>(`/api/v1/finance/incomes/${id}`,{method:'PUT',body:JSON.stringify(x)},t);export const deleteIncome=(t:string,id:string)=>request<void>(`/api/v1/finance/incomes/${id}`,{method:'DELETE'},t);export const updateExpense=(t:string,id:string,x:{description:string;amount:number;transactionDate:string;category:string})=>request<Expense>(`/api/v1/finance/expenses/${id}`,{method:'PUT',body:JSON.stringify(x)},t);export const deleteExpense=(t:string,id:string)=>request<void>(`/api/v1/finance/expenses/${id}`,{method:'DELETE'},t);
+export const createIncome=(t:string,x:{description:string;amount:number;transactionDate:string})=>request<Income>('/api/v1/finance/incomes',{method:'POST',body:JSON.stringify(x)},t);export const createExpense=(t:string,x:{description:string;amount:number;transactionDate:string;category:string})=>request<Expense>('/api/v1/finance/expenses',{method:'POST',body:JSON.stringify(x)},t);
+export const getBudget=(t:string,m:string)=>request<MonthlyBudget>(`/api/v1/finance/budgets?month=${m}`,{},t);export const setBudget=(t:string,c:string,a:number,m:string)=>request<MonthlyBudget>(`/api/v1/finance/budgets/${c}?month=${m}`,{method:'PUT',body:JSON.stringify({amount:a})},t);export const deleteBudget=(t:string,c:string,m:string)=>request<void>(`/api/v1/finance/budgets/${c}?month=${m}`,{method:'DELETE'},t);
+export const getGoals=(t:string)=>request<FinancialGoal[]>('/api/v1/finance/goals',{},t);export const createGoal=(t:string,x:{name:string;targetAmount:number;currentAmount:number;targetDate:string})=>request<FinancialGoal>('/api/v1/finance/goals',{method:'POST',body:JSON.stringify(x)},t);export const updateGoal=(t:string,id:string,x:{name:string;targetAmount:number;currentAmount:number;targetDate:string})=>request<FinancialGoal>(`/api/v1/finance/goals/${id}`,{method:'PUT',body:JSON.stringify(x)},t);export const deleteGoal=(t:string,id:string)=>request<void>(`/api/v1/finance/goals/${id}`,{method:'DELETE'},t);export const addContribution=(t:string,id:string,x:{amount:number;contributionDate:string;note:string|null})=>request<Contribution>(`/api/v1/finance/goals/${id}/contributions`,{method:'POST',body:JSON.stringify(x)},t);export const deleteContribution=(t:string,g:string,c:string)=>request<void>(`/api/v1/finance/goals/${g}/contributions/${c}`,{method:'DELETE'},t);
+export const getRecurring=(t:string)=>request<RecurringTransaction[]>('/api/v1/finance/recurring-transactions',{},t);export const createRecurring=(t:string,x:{kind:string;description:string;amount:number;category:string|null;frequency:string;startDate:string;endDate:string|null})=>request<RecurringTransaction>('/api/v1/finance/recurring-transactions',{method:'POST',body:JSON.stringify(x)},t);export const updateRecurring=(t:string,id:string,x:{description:string;amount:number;category:string|null;endDate:string|null;active:boolean})=>request<RecurringTransaction>(`/api/v1/finance/recurring-transactions/${id}`,{method:'PUT',body:JSON.stringify(x)},t);export const deleteRecurring=(t:string,id:string)=>request<void>(`/api/v1/finance/recurring-transactions/${id}`,{method:'DELETE'},t);export const getCashFlowProjection=(t:string)=>request<CashFlowProjection>('/api/v1/finance/projections/cash-flow',{},t);
+export const getReportOverview=(t:string,from:string,to:string)=>request<ReportOverview>(`/api/v1/reports/overview?from=${from}&to=${to}`,{},t);export const downloadReportCsv=async(t:string,from:string,to:string)=>{const r=await fetch(`${apiUrl('/api/v1/reports/export.csv')}?from=${from}&to=${to}`,{headers:{Accept:'text/csv',Authorization:`Bearer ${t}`,'skip_zrok_interstitial':'true'}});if(!r.ok)throw new ApiError('Não foi possível exportar o relatório.',r.status);return r.text()};export function isExpense(x:Income|Expense):x is Expense{return 'category' in x}
