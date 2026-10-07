@@ -7,16 +7,16 @@ import { Screen } from '@/components/Screen';
 import { useColorScheme } from '@/components/useColorScheme';
 import { addContribution, createGoal, createRecurring, deleteBudget, deleteExpense, deleteGoal, deleteIncome, deleteRecurring, getBudget, getCashFlowProjection, getGoals, getRecurring, getTransactions, isExpense, setBudget, updateRecurring, type CashFlowProjection, type Expense, type FinancialGoal, type Income, type MonthlyBudget, type RecurringTransaction } from '@/core/api/finance-api';
 import { useAuth } from '@/core/auth/auth-context';
+import { formatMonth, localMonth, shiftMonth } from '@/core/finance/month';
 import { palette, radius } from '@/constants/Colors';
 
 const money = (value: number | string) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value));
-const initialMonth = new Date().toISOString().slice(0, 7);
 const categories = ['FOOD', 'TRANSPORT', 'RENT', 'LEISURE', 'HEALTH', 'OTHER'];
 
 export default function Finances() {
   const colors = palette[useColorScheme() ?? 'light'];
   const { authorizedRequest } = useAuth();
-  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+  const [selectedMonth, setSelectedMonth] = useState(() => localMonth());
   const [entries, setEntries] = useState<Array<Income | Expense>>([]);
   const [budget, setBudgetState] = useState<MonthlyBudget | null>(null);
   const [goals, setGoals] = useState<FinancialGoal[]>([]);
@@ -64,8 +64,6 @@ export default function Finances() {
     <Pressable onPress={() => router.push('/create')} style={[s.cta, { backgroundColor: colors.primary }]}><Text style={s.ctaText}>+ Adicionar lançamento</Text></Pressable>
   </Screen>;
 }
-function shiftMonth(value: string, delta: number): string { const date = new Date(`${value}-01T12:00:00Z`); date.setUTCMonth(date.getUTCMonth() + delta); return date.toISOString().slice(0, 7); }
-function formatMonth(value: string): string { return new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}-01T12:00:00Z`)); }
 function SectionTitle({ title, colors }: { title: string; colors: typeof palette.light }) { return <Text style={[s.section, { color: colors.text }]}>{title}</Text>; }
 function Field({ colors, ...props }: { colors: typeof palette.light } & React.ComponentProps<typeof TextInput>) { return <TextInput {...props} placeholderTextColor={colors.textMuted} style={[s.input, { color: colors.text, borderColor: colors.border }]} />; }
 function Button({ label, onPress, colors, disabled }: { label: string; onPress: () => void; colors: typeof palette.light; disabled: boolean }) { return <Pressable disabled={disabled} onPress={onPress} style={[s.button, { backgroundColor: colors.primary }, disabled && s.disabled]}>{disabled ? <ActivityIndicator color="#fff" /> : <Text style={s.buttonText}>{label}</Text>}</Pressable>; }
