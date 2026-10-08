@@ -1,0 +1,45 @@
+name: Mobile CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mobile:
+    name: Mobile
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26.4.0'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # --include=dev is explicit: an inherited NODE_ENV=production makes npm
+      # skip devDependencies, which silently removes the test runner.
+      - name: Install dependencies
+        run: npm ci --include=dev --no-audit --no-fund
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Export Android bundle
+        run: npx expo export --platform android --output-dir dist
