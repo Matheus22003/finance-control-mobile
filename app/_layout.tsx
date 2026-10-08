@@ -28,6 +28,7 @@ export default function RootLayout() {
         <Stack.Screen name="create" options={{ presentation: 'modal' }} />
         <Stack.Screen name="debt-create" options={{ presentation: 'modal' }} />
         <Stack.Screen name="debt/[id]" />
+        <Stack.Screen name="group/[id]" />
         <Stack.Screen name="settlement" />
         <Stack.Screen name="transaction-edit" />
       </Stack>
