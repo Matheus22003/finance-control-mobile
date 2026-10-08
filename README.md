@@ -1,5 +1,7 @@
 # Finance Control Mobile
 
+[![Mobile CI](https://github.com/Matheus22003/finance-control-mobile/actions/workflows/ci.yml/badge.svg)](https://github.com/Matheus22003/finance-control-mobile/actions/workflows/ci.yml)
+
 Aplicativo instalado do Finance Control para Android e iOS, construído com React Native e Expo. Ele consome exclusivamente o BFF público versionado em `/api/v1`; nunca acessa Finance Service, Debt Service, bancos de dados ou provedores de infraestrutura diretamente.
 
 ## Sessão segura
