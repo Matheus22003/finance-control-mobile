@@ -1,14 +1,15 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import { describe, expect, it } from 'vitest';
 
-import { resolveApiBaseUrl } from './config.ts';
+import { resolveApiBaseUrl } from '@/core/api/config';
 
-test('allows HTTPS BFF addresses and loopback HTTP only for development', () => {
-  assert.equal(resolveApiBaseUrl('https://bff.example/'), 'https://bff.example');
-  assert.equal(resolveApiBaseUrl('http://127.0.0.1:8080/'), 'http://127.0.0.1:8080');
-});
+describe('resolveApiBaseUrl', () => {
+  it('allows HTTPS BFF addresses and loopback HTTP only for development', () => {
+    expect(resolveApiBaseUrl('https://bff.example/')).toBe('https://bff.example');
+    expect(resolveApiBaseUrl('http://127.0.0.1:8080/')).toBe('http://127.0.0.1:8080');
+  });
 
-test('rejects insecure non-loopback and malformed BFF addresses', () => {
-  assert.throws(() => resolveApiBaseUrl('http://bff.example'));
-  assert.throws(() => resolveApiBaseUrl('not-a-url'));
+  it('rejects insecure non-loopback and malformed BFF addresses', () => {
+    expect(() => resolveApiBaseUrl('http://bff.example')).toThrow();
+    expect(() => resolveApiBaseUrl('not-a-url')).toThrow();
+  });
 });

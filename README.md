@@ -23,11 +23,16 @@ Em um dispositivo físico, `localhost` aponta para o próprio aparelho; use uma 
 ## Desenvolvimento
 
 ```bash
-npm install
-npm run test
-npx tsc --noEmit
+npm ci
+npm run typecheck
+npm test
 npm run android
 ```
+
+Os testes rodam com Vitest (`core/**/*.test.ts`) e também são verificados pelo
+`tsc`, então uma quebra de tipo em teste falha o `typecheck`. A integração
+contínua executa typecheck, testes e o bundle Android em cada push e pull
+request para `main` e `develop`.
 
 O primeiro login conectado habilita dashboard, lançamentos e a criação de receitas/despesas reais pelo BFF. A aba Finanças também consulta orçamento mensal, metas, recorrências e projeção de caixa; criação e atualização desses recursos já usa os contratos reais do BFF. A aba Relatórios consulta `/api/v1/reports/overview` por período e exporta `/api/v1/reports/export.csv`, compartilhando o arquivo pelo recurso nativo do sistema.
 
