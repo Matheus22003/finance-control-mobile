@@ -4,6 +4,33 @@
 
 Aplicativo instalado do Finance Control para Android e iOS, construído com React Native e Expo. Ele consome exclusivamente o BFF público versionado em `/api/v1`; nunca acessa Finance Service, Debt Service, bancos de dados ou provedores de infraestrutura diretamente.
 
+## Como este repositório se encaixa
+
+Este é o cliente nativo mobile do Finance Control. O backend público é o
+[`finance-control-bff`](https://github.com/Matheus22003/finance-control-bff); o
+ambiente integrado e o deploy ficam em
+[`finance-control-infra`](https://github.com/Matheus22003/finance-control-infra).
+
+### Funcionalidades atuais
+
+- dashboard, receitas, despesas, orçamento, metas, recorrências e fluxo de caixa;
+- relatórios e exportação CSV pelo compartilhamento nativo;
+- amigos, convites, grupos e criação de grupos;
+- dívidas, pagamentos, liquidação e cotas personalizadas por participante;
+- gestão de membros de grupo com regra de dono.
+
+### Identidade e distribuição
+
+| Campo | Valor |
+|---|---|
+| Expo SDK | `57` |
+| Android package | `com.matheus22003.financecontrol` |
+| iOS bundle identifier | `com.matheus22003.financecontrol` |
+| EAS project | `@dijounas/finance-control-mobile` |
+
+O projeto possui perfis EAS `preview` (APK interno) e `production` (AAB para
+loja). A publicação na Google Play está adiada; a distribuição atual é privada.
+
 ## Sessão segura
 
 - O access token existe somente em memória.
