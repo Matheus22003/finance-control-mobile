@@ -77,7 +77,7 @@ describe('getTransactions', () => {
 
     const requested = fetchMock.mock.calls.map(call => call[0]);
     expect(requested).toHaveLength(2);
-    expect(requested.every(url => url.includes('from=2026-09-01') && url.includes('to=2026-09-31'))).toBe(true);
+    expect(requested.every(url => url.includes('from=2026-09-01') && url.includes('to=2026-09-30'))).toBe(true);
     expect(entries.map(entry => entry.id)).toEqual(['e1', 'e2', 'i1']);
     expect(entries.filter(isExpense)).toHaveLength(2);
   });

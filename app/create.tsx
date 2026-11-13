@@ -7,6 +7,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { createExpense, createIncome } from '@/core/api/finance-api';
 import { useAuth } from '@/core/auth/auth-context';
 import { palette, radius } from '@/constants/Colors';
+import { localDate } from '@/core/finance/month';
 
 const categories = ['FOOD', 'TRANSPORT', 'RENT', 'LEISURE', 'HEALTH', 'OTHER'];
 
@@ -27,7 +28,7 @@ export default function Create() {
     }
     setSaving(true);
     try {
-      const transactionDate = new Date().toISOString().slice(0, 10);
+      const transactionDate = localDate();
       if (kind === 'Receita') await authorizedRequest(token => createIncome(token, { description: description.trim(), amount: parsedAmount, transactionDate }));
       else await authorizedRequest(token => createExpense(token, { description: description.trim(), amount: parsedAmount, transactionDate, category }));
       router.replace('/finances');

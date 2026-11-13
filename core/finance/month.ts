@@ -20,11 +20,29 @@ export function localMonth(reference: Date = new Date()): string {
   return `${year}-${month}`;
 }
 
+export function localDate(reference: Date = new Date()): string {
+  const year = reference.getFullYear();
+  const month = String(reference.getMonth() + 1).padStart(2, '0');
+  const day = String(reference.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 /** Moves a `YYYY-MM` value by whole months, anchored at noon UTC to avoid drift. */
 export function shiftMonth(value: string, delta: number): string {
   const date = parseMonth(value);
   date.setUTCMonth(date.getUTCMonth() + delta);
   return date.toISOString().slice(0, 7);
+}
+
+export function monthDateRange(value: string): { from: string; to: string } {
+  const date = parseMonth(value);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return {
+    from: `${value}-01`,
+    to: `${value}-${String(lastDay).padStart(2, '0')}`,
+  };
 }
 
 /** Human label such as `setembro de 2026`. */
