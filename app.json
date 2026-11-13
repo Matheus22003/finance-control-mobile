@@ -8,9 +8,11 @@
     "scheme": "financecontrolmobile",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.matheus22003.financecontrol"
     },
     "android": {
+      "package": "com.matheus22003.financecontrol",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -39,6 +41,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "69f4b894-8e46-4560-8e3a-3c169f7d4398"
+      }
+    },
+    "owner": "dijounas"
   }
 }
