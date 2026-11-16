@@ -110,7 +110,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       if (session.accessToken) {
         await unregisterMobileDevice(
           session.accessToken,
-          { deviceInstallationId: installationId },
+          { installationId },
           Platform.OS === 'ios' ? 'ios' : 'android',
         );
       }

@@ -110,7 +110,7 @@ describe('initializePushNotifications', () => {
   it('registers a device and unregisters it with the same installation id', async () => {
     const registration = await initializePushNotifications({
       accessToken: 'access-token',
-      deviceInstallationId: 'installation-id',
+      installationId: 'installation-id',
       platform: 'android',
       appVersion: '1.0.0',
       onRoute: vi.fn(),
@@ -118,7 +118,7 @@ describe('initializePushNotifications', () => {
     });
 
     expect(registerMobileDevice).toHaveBeenCalledWith('access-token', {
-      deviceInstallationId: 'installation-id',
+      installationId: 'installation-id',
       expoPushToken: 'ExponentPushToken[test]',
       platform: 'android',
       appVersion: '1.0.0',
@@ -126,7 +126,7 @@ describe('initializePushNotifications', () => {
 
     await registration?.unregister();
     expect(unregisterMobileDevice).toHaveBeenCalledWith('access-token', {
-      deviceInstallationId: 'installation-id',
+      installationId: 'installation-id',
     }, 'android');
     expect(removeResponseListener).toHaveBeenCalledOnce();
     expect(removeReceivedListener).toHaveBeenCalledOnce();
@@ -137,7 +137,7 @@ describe('initializePushNotifications', () => {
     const onHint = vi.fn();
     await initializePushNotifications({
       accessToken: 'access-token',
-      deviceInstallationId: 'installation-id',
+      installationId: 'installation-id',
       platform: 'ios',
       appVersion: '1.0.0',
       onRoute,

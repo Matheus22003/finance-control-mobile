@@ -25,7 +25,7 @@ function PushRegistration() {
       active = false;
       const registration = registrationRef.current;
       registrationRef.current = null;
-      void registration?.unregister();
+      void registration?.unregister().catch(() => undefined);
     };
 
     if (isRestoring || !accessToken) return cleanup;
@@ -34,7 +34,7 @@ function PushRegistration() {
       try {
         const registration = await initializePushNotifications({
           accessToken,
-          deviceInstallationId: await getInstallationId(),
+          installationId: await getInstallationId(),
           platform: Platform.OS === 'ios' ? 'ios' : 'android',
           appVersion: Constants.expoConfig?.version ?? '1.0.0',
           onRoute: target => router.push(target as never),

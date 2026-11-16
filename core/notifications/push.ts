@@ -25,7 +25,7 @@ type NotificationResponseLike = {
 
 export type PushRegistrationOptions = {
   accessToken: string;
-  deviceInstallationId: string;
+  installationId: string;
   platform: MobileDeviceRegistration['platform'];
   appVersion: string;
   onRoute(target: PushRouteTarget): void | Promise<void>;
@@ -101,7 +101,7 @@ export async function initializePushNotifications(
   if (!pushToken) return null;
 
   const device: MobileDeviceRegistration = {
-    deviceInstallationId: options.deviceInstallationId,
+    installationId: options.installationId,
     expoPushToken: pushToken,
     platform: options.platform,
     appVersion: options.appVersion,
@@ -128,7 +128,7 @@ export async function initializePushNotifications(
       responseSubscription.remove();
       receivedSubscription.remove();
       await unregisterMobileDevice(options.accessToken, {
-        deviceInstallationId: options.deviceInstallationId,
+        installationId: options.installationId,
       }, options.platform);
     },
   };
