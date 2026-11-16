@@ -31,8 +31,10 @@ export default function Finances() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const mounted = useRef(true);
+  const loadRequestId = useRef(0);
 
   const load = useCallback(async () => {
+    const requestId = ++loadRequestId.current;
     const results = await Promise.allSettled([
       authorizedRequest(token => getTransactions(token, selectedMonth)),
       authorizedRequest(token => getBudget(token, selectedMonth)),
@@ -40,16 +42,17 @@ export default function Finances() {
       authorizedRequest(getRecurring),
       authorizedRequest(token => getCashFlowProjection(token)),
     ]);
+    if (!mounted.current || requestId !== loadRequestId.current) return;
     const [transactions, budgetResult, goalsResult, recurringResult, projectionResult] = results;
     if (transactions.status === 'fulfilled') setEntries(transactions.value);
     if (budgetResult.status === 'fulfilled') setBudgetState(budgetResult.value);
     if (goalsResult.status === 'fulfilled') setGoals(goalsResult.value);
     if (recurringResult.status === 'fulfilled') setRecurring(recurringResult.value);
     if (projectionResult.status === 'fulfilled') setProjection(projectionResult.value);
-    if (mounted.current && transactions.status === 'rejected') {
+    if (transactions.status === 'rejected') {
       Alert.alert('Não foi possível carregar os lançamentos', 'Tente novamente em instantes.');
     }
-    if (mounted.current) setLoading(false);
+    setLoading(false);
   }, [authorizedRequest, selectedMonth]);
   useEffect(() => { mounted.current = true; void load(); return () => { mounted.current = false; }; }, [load]);
   const expenseTotal = useMemo(() => entries.filter(isExpense).reduce((sum, item) => sum + Number(item.amount), 0), [entries]);
