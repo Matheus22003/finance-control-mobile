@@ -129,7 +129,7 @@ export async function initializePushNotifications(
       receivedSubscription.remove();
       await unregisterMobileDevice(options.accessToken, {
         deviceInstallationId: options.deviceInstallationId,
-      });
+      }, options.platform);
     },
   };
 }

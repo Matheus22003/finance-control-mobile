@@ -108,7 +108,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     try {
       // Remove the push device while the current access token is still valid.
       if (session.accessToken) {
-        await unregisterMobileDevice(session.accessToken, { deviceInstallationId: installationId });
+        await unregisterMobileDevice(
+          session.accessToken,
+          { deviceInstallationId: installationId },
+          Platform.OS === 'ios' ? 'ios' : 'android',
+        );
       }
     } catch {
       // Logout must continue if the future device contract is unavailable.

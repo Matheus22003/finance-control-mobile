@@ -22,9 +22,13 @@ export function registerMobileDevice(
 export function unregisterMobileDevice(
   accessToken: string,
   device: Pick<MobileDeviceRegistration, 'deviceInstallationId'>,
+  platform: MobileDeviceRegistration['platform'],
 ): Promise<void> {
-  return request<void>(MOBILE_DEVICES_PATH, {
+  return request<void>(
+    `${MOBILE_DEVICES_PATH}/${encodeURIComponent(device.deviceInstallationId)}/${platform}`,
+    {
     method: 'DELETE',
-    body: JSON.stringify(device),
-  }, accessToken);
+    },
+    accessToken,
+  );
 }

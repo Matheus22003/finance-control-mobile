@@ -127,7 +127,7 @@ describe('initializePushNotifications', () => {
     await registration?.unregister();
     expect(unregisterMobileDevice).toHaveBeenCalledWith('access-token', {
       deviceInstallationId: 'installation-id',
-    });
+    }, 'android');
     expect(removeResponseListener).toHaveBeenCalledOnce();
     expect(removeReceivedListener).toHaveBeenCalledOnce();
   });
