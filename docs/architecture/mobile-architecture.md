@@ -16,6 +16,7 @@ Expo reduz a complexidade inicial de desenvolvimento, deep links, build e notifi
 - O aplicativo não chama serviços internos, bancos ou provedores de notificação.
 - A UI mobile é independente da UI Angular; apenas contratos, linguagem de domínio e tokens visuais podem ser compartilhados.
 - Push é um aviso de mudança. O estado oficial continua sendo relido pelo BFF.
+- O cliente usa somente o contrato futuro `POST/DELETE /api/v1/notifications/mobile-devices`: registra `deviceInstallationId`, `expoPushToken`, plataforma e versão do app; a remoção envia apenas o `deviceInstallationId` no mesmo recurso.
 
 ## Autenticação: primeiro marco funcional
 
@@ -34,7 +35,7 @@ Antes das telas financeiras, o BFF precisa oferecer uma sessão mobile explícit
 1. autenticação mobile, sessão segura e deep links;
 2. resumo, saldo e lançamentos;
 3. orçamento, metas e dívidas;
-4. registro de dispositivo e push FCM/APNs;
+4. registro de dispositivo e push Expo via `/api/v1/notifications/mobile-devices`;
 5. relatórios e estratégia deliberada de cache/offline.
 
 ## Custos e plataformas
