@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ApiError } from '@/core/api/request';
+import { unregisterMobileDevice } from '@/core/api/mobile-device-api';
 import { mobileLogin, mobileLogout, mobileRefresh } from './mobile-auth-api';
 import { clearRefreshToken, getInstallationId, getRefreshToken, replaceRefreshToken } from './secure-session';
 import { applySessionResponse, clearSession, createInitialSessionState } from './session-state';
@@ -105,13 +106,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const signOut = useCallback(async () => {
     const [refreshToken, installationId] = await Promise.all([getRefreshToken(), getInstallationId()]);
     try {
+      // Remove the push device while the current access token is still valid.
+      if (session.accessToken) {
+        await unregisterMobileDevice(session.accessToken, { deviceInstallationId: installationId });
+      }
+    } catch {
+      // Logout must continue if the future device contract is unavailable.
+    }
+    try {
       if (refreshToken) await mobileLogout(refreshToken, installationId);
     } catch {
       // Local credential removal is intentional even if the network is unavailable.
     } finally {
       await erase();
     }
-  }, [erase]);
+  }, [erase, session.accessToken]);
 
   const value = useMemo<AuthContextValue>(() => ({ ...session, isRestoring, signIn, refresh, authorizedRequest, signOut }),
     [authorizedRequest, isRestoring, refresh, session, signIn, signOut]);

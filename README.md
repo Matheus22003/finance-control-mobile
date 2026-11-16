@@ -23,7 +23,7 @@ ambiente integrado e o deploy ficam em
 
 | Campo | Valor |
 |---|---|
-| Expo SDK | `57` |
+| Expo SDK | `58` |
 | Android package | `com.matheus22003.financecontrol` |
 | iOS bundle identifier | `com.matheus22003.financecontrol` |
 | EAS project | `@dijounas/finance-control-mobile` |
@@ -37,6 +37,8 @@ loja). A publicação na Google Play está adiada; a distribuição atual é pri
 - O refresh token é opaco, rotativo e guardado exclusivamente no Android Keystore/iOS Keychain com `expo-secure-store`.
 - Um UUID aleatório de instalação é persistido no mesmo armazenamento seguro e vincula a sessão ao app instalado, sem coletar identificadores de hardware.
 - O app restaura a sessão com `POST /api/v1/auth/mobile/refresh`, faz logout via `POST /api/v1/auth/mobile/logout` e limpa a credencial local mesmo quando estiver offline.
+- Em um dispositivo físico, após a restauração autenticada, solicita permissão de notificações, registra o token Expo em `POST /api/v1/notifications/mobile-devices` usando o UUID de instalação e remove o registro com `DELETE` no mesmo contrato ao sair.
+- Push é apenas uma dica: os dados da notificação podem abrir uma rota interna do Expo Router, mas a tela relê o estado oficial do BFF; tokens de push nunca são tratados como estado de negócio.
 - O app não usa cookies de navegador, `AsyncStorage` nem `localStorage` para tokens.
 
 ## API
