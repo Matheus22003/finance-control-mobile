@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMonth, localMonth, shiftMonth } from '@/core/finance/month';
+import { formatMonth, localDate, localMonth, monthDateRange, shiftMonth } from '@/core/finance/month';
 
 describe('localMonth', () => {
   it('derives the current month from the device calendar, not UTC', () => {
-    // Built in local time: 31 March 2026, 23:30 on this device.
     const lateMarchLocally = new Date(2026, 2, 31, 23, 30);
     expect(localMonth(lateMarchLocally)).toBe('2026-03');
+  });
+});
+
+describe('localDate', () => {
+  it('uses the device calendar date instead of UTC conversion', () => {
+    expect(localDate(new Date(2026, 10, 30, 23, 30))).toBe('2026-11-30');
   });
 });
 
@@ -28,6 +33,17 @@ describe('shiftMonth', () => {
   it('rejects malformed month values', () => {
     expect(() => shiftMonth('2026-9', 1)).toThrow();
     expect(() => shiftMonth('setembro', 1)).toThrow();
+  });
+});
+
+describe('monthDateRange', () => {
+  it.each([
+    ['2026-02', '2026-02-01', '2026-02-28'],
+    ['2028-02', '2028-02-01', '2028-02-29'],
+    ['2026-04', '2026-04-01', '2026-04-30'],
+    ['2026-12', '2026-12-01', '2026-12-31'],
+  ])('returns the real calendar bounds for %s', (month, from, to) => {
+    expect(monthDateRange(month)).toEqual({ from, to });
   });
 });
 

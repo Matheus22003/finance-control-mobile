@@ -6,6 +6,7 @@ import { Screen } from '@/components/Screen';
 import { useColorScheme } from '@/components/useColorScheme';
 import { createPayment, getDebt, getDebtPayments, type Debt, type Payment } from '@/core/api/debts-api';
 import { useAuth } from '@/core/auth/auth-context';
+import { localDate } from '@/core/finance/month';
 import { palette, radius } from '@/constants/Colors';
 
 const money = (value: number | string) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value));
@@ -15,7 +16,7 @@ export default function DebtDetail() {
   const [debt, setDebt] = useState<Debt | null>(null); const [payments, setPayments] = useState<Payment[]>([]); const [loading, setLoading] = useState(true);
   const load = useCallback(async () => { try { const [nextDebt, nextPayments] = await Promise.all([authorizedRequest(token => getDebt(token, id)), authorizedRequest(token => getDebtPayments(token, id))]); setDebt(nextDebt); setPayments(nextPayments); } catch { Alert.alert('Não foi possível abrir a dívida', 'Tente novamente.'); } finally { setLoading(false); } }, [authorizedRequest, id]);
   useEffect(() => { void load(); }, [load]);
-  async function pay(shareId: string, remaining: number | string) { try { await authorizedRequest(token => createPayment(token, id, shareId, { amount: Number(remaining), paymentDate: new Date().toISOString().slice(0, 10), note: null })); Alert.alert('Pagamento registrado', 'O pagamento foi enviado para confirmação quando necessário.'); void load(); } catch { Alert.alert('Não foi possível registrar', 'Tente novamente.'); } }
+  async function pay(shareId: string, remaining: number | string) { try { await authorizedRequest(token => createPayment(token, id, shareId, { amount: Number(remaining), paymentDate: localDate(), note: null })); Alert.alert('Pagamento registrado', 'O pagamento foi enviado para confirmação quando necessário.'); void load(); } catch { Alert.alert('Não foi possível registrar', 'Tente novamente.'); } }
   if (isRestoring) return null;
   if (!accessToken) return <Redirect href="/login" />;
   if (loading) return <Screen><ActivityIndicator color={colors.primary} /></Screen>; if (!debt) return <Screen><Text style={{ color: colors.text }}>Dívida indisponível.</Text></Screen>;

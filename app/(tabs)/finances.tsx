@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 
@@ -7,7 +7,7 @@ import { Screen } from '@/components/Screen';
 import { useColorScheme } from '@/components/useColorScheme';
 import { addContribution, createGoal, createRecurring, deleteBudget, deleteExpense, deleteGoal, deleteIncome, deleteRecurring, getBudget, getCashFlowProjection, getGoals, getRecurring, getTransactions, isExpense, setBudget, updateRecurring, type CashFlowProjection, type Expense, type FinancialGoal, type Income, type MonthlyBudget, type RecurringTransaction } from '@/core/api/finance-api';
 import { useAuth } from '@/core/auth/auth-context';
-import { formatMonth, localMonth, shiftMonth } from '@/core/finance/month';
+import { formatMonth, localDate, localMonth, shiftMonth } from '@/core/finance/month';
 import { palette, radius } from '@/constants/Colors';
 
 const money = (value: number | string) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value));
@@ -30,23 +30,37 @@ export default function Finances() {
   const [recurringAmount, setRecurringAmount] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const mounted = useRef(true);
+  const loadRequestId = useRef(0);
 
   const load = useCallback(async () => {
-    try {
-      const [nextEntries, nextBudget, nextGoals, nextRecurring, nextProjection] = await Promise.all([
-        authorizedRequest(token => getTransactions(token, selectedMonth)), authorizedRequest(token => getBudget(token, selectedMonth)), authorizedRequest(getGoals), authorizedRequest(getRecurring), authorizedRequest(token => getCashFlowProjection(token)),
-      ]);
-      setEntries(nextEntries); setBudgetState(nextBudget); setGoals(nextGoals); setRecurring(nextRecurring); setProjection(nextProjection);
-    } catch { Alert.alert('Não foi possível carregar o planejamento', 'Tente novamente em instantes.'); }
-    finally { setLoading(false); }
+    const requestId = ++loadRequestId.current;
+    const results = await Promise.allSettled([
+      authorizedRequest(token => getTransactions(token, selectedMonth)),
+      authorizedRequest(token => getBudget(token, selectedMonth)),
+      authorizedRequest(getGoals),
+      authorizedRequest(getRecurring),
+      authorizedRequest(token => getCashFlowProjection(token)),
+    ]);
+    if (!mounted.current || requestId !== loadRequestId.current) return;
+    const [transactions, budgetResult, goalsResult, recurringResult, projectionResult] = results;
+    if (transactions.status === 'fulfilled') setEntries(transactions.value);
+    if (budgetResult.status === 'fulfilled') setBudgetState(budgetResult.value);
+    if (goalsResult.status === 'fulfilled') setGoals(goalsResult.value);
+    if (recurringResult.status === 'fulfilled') setRecurring(recurringResult.value);
+    if (projectionResult.status === 'fulfilled') setProjection(projectionResult.value);
+    if (transactions.status === 'rejected') {
+      Alert.alert('Não foi possível carregar os lançamentos', 'Tente novamente em instantes.');
+    }
+    setLoading(false);
   }, [authorizedRequest, selectedMonth]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { mounted.current = true; void load(); return () => { mounted.current = false; }; }, [load]);
   const expenseTotal = useMemo(() => entries.filter(isExpense).reduce((sum, item) => sum + Number(item.amount), 0), [entries]);
 
   async function saveBudget() { const amount = Number(budgetAmount.replace(/\./g, '').replace(',', '.')); if (!amount || amount < 0) return Alert.alert('Valor inválido', 'Informe um limite maior ou igual a zero.'); setSaving(true); try { await authorizedRequest(token => setBudget(token, budgetCategory, amount, selectedMonth)); setBudgetAmount(''); await load(); } catch { Alert.alert('Não foi possível salvar o orçamento', 'Tente novamente.'); } finally { setSaving(false); } }
   async function saveGoal() { const amount = Number(goalAmount.replace(/\./g, '').replace(',', '.')); if (!goalName.trim() || !amount || amount <= 0) return Alert.alert('Meta incompleta', 'Informe nome e valor da meta.'); setSaving(true); try { const targetDate = `${new Date().getFullYear() + 1}-12-31`; await authorizedRequest(token => createGoal(token, { name: goalName.trim(), targetAmount: amount, currentAmount: 0, targetDate })); setGoalName(''); setGoalAmount(''); await load(); } catch { Alert.alert('Não foi possível criar a meta', 'Tente novamente.'); } finally { setSaving(false); } }
   async function saveRecurring() { const amount = Number(recurringAmount.replace(/\./g, '').replace(',', '.')); if (!recurringDescription.trim() || !amount || amount <= 0) return Alert.alert('Recorrência incompleta', 'Informe descrição e valor.'); setSaving(true); try { await authorizedRequest(token => createRecurring(token, { kind: 'EXPENSE', description: recurringDescription.trim(), amount, category: 'OTHER', frequency: 'MONTHLY', startDate: `${selectedMonth}-01`, endDate: null })); setRecurringDescription(''); setRecurringAmount(''); await load(); } catch { Alert.alert('Não foi possível criar a recorrência', 'Tente novamente.'); } finally { setSaving(false); } }
-  async function contribute(goal: FinancialGoal) { const amount = Number(goal.requiredMonthlyContribution); if (!amount || amount <= 0) return Alert.alert('Meta concluída', 'Esta meta não precisa de novo aporte.'); try { await authorizedRequest(token => addContribution(token, goal.id, { amount, contributionDate: new Date().toISOString().slice(0, 10), note: 'Aporte mobile' })); await load(); } catch { Alert.alert('Não foi possível registrar o aporte', 'Tente novamente.'); } }
+  async function contribute(goal: FinancialGoal) { const amount = Number(goal.requiredMonthlyContribution); if (!amount || amount <= 0) return Alert.alert('Meta concluída', 'Esta meta não precisa de novo aporte.'); try { await authorizedRequest(token => addContribution(token, goal.id, { amount, contributionDate: localDate(), note: 'Aporte mobile' })); await load(); } catch { Alert.alert('Não foi possível registrar o aporte', 'Tente novamente.'); } }
   async function removeEntry(entry: Income | Expense) { try { await authorizedRequest(token => isExpense(entry) ? deleteExpense(token, entry.id) : deleteIncome(token, entry.id)); await load(); } catch { Alert.alert('Não foi possível remover o lançamento', 'Tente novamente.'); } }
   async function deleteCategoryBudget(category: string) { try { await authorizedRequest(token => deleteBudget(token, category, selectedMonth)); await load(); } catch { Alert.alert('Não foi possível remover o orçamento', 'Tente novamente.'); } }
   async function removeGoal(goal: FinancialGoal) { try { await authorizedRequest(token => deleteGoal(token, goal.id)); await load(); } catch { Alert.alert('Não foi possível remover a meta', 'Tente novamente.'); } }
