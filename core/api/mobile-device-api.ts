@@ -3,7 +3,7 @@ import { request } from '@/core/api/request';
 export const MOBILE_DEVICES_PATH = '/api/v1/notifications/mobile-devices';
 
 export type MobileDeviceRegistration = {
-  deviceInstallationId: string;
+  installationId: string;
   expoPushToken: string;
   platform: 'android' | 'ios';
   appVersion: string;
@@ -21,11 +21,11 @@ export function registerMobileDevice(
 
 export function unregisterMobileDevice(
   accessToken: string,
-  device: Pick<MobileDeviceRegistration, 'deviceInstallationId'>,
+  device: Pick<MobileDeviceRegistration, 'installationId'>,
   platform: MobileDeviceRegistration['platform'],
 ): Promise<void> {
   return request<void>(
-    `${MOBILE_DEVICES_PATH}/${encodeURIComponent(device.deviceInstallationId)}/${platform}`,
+    `${MOBILE_DEVICES_PATH}/${encodeURIComponent(device.installationId)}/${platform}`,
     {
     method: 'DELETE',
     },
