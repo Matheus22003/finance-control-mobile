@@ -38,6 +38,7 @@ function PushRegistration() {
           platform: Platform.OS === 'ios' ? 'ios' : 'android',
           appVersion: Constants.expoConfig?.version ?? '1.0.0',
           onRoute: target => router.push(target as never),
+          onError: reason => console.warn(`[push] registration unavailable: ${reason}`),
           // Push is only a hint. Screens reread their canonical BFF state after routing;
           // this dashboard read also refreshes the authenticated session boundary.
           onHint: () => authorizedRequest(getDashboard).then(() => undefined).catch(() => undefined),
