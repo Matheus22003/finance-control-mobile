@@ -8,6 +8,7 @@ import { mobileLogin, mobileLogout, mobileRefresh } from './mobile-auth-api';
 import { clearRefreshToken, getInstallationId, getRefreshToken, replaceRefreshToken } from './secure-session';
 import { applySessionResponse, clearSession, createInitialSessionState } from './session-state';
 import type { SessionState } from './types';
+import { withAuthorizedAccessToken } from './authorized-request';
 
 type AuthContextValue = SessionState & {
   isRestoring: boolean;
@@ -92,15 +93,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [accept]);
 
   const authorizedRequest = useCallback(async <T,>(operation: (accessToken: string) => Promise<T>): Promise<T> => {
-    if (!session.accessToken) throw new ApiError('Sua sessão expirou. Entre novamente.', 401);
-    try {
-      return await operation(session.accessToken);
-    } catch (error) {
-      if (!(error instanceof ApiError) || error.status !== 401) throw error;
-      const rotatedAccessToken = await refresh();
-      if (!rotatedAccessToken) throw error;
-      return operation(rotatedAccessToken);
-    }
+    return withAuthorizedAccessToken(session.accessToken, refresh, operation);
   }, [refresh, session.accessToken]);
 
   const signOut = useCallback(async () => {
@@ -108,11 +101,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     try {
       // Remove the push device while the current access token is still valid.
       if (session.accessToken) {
-        await unregisterMobileDevice(
-          session.accessToken,
+        await authorizedRequest(accessToken => unregisterMobileDevice(
+          accessToken,
           { installationId },
           Platform.OS === 'ios' ? 'ios' : 'android',
-        );
+        ));
       }
     } catch {
       // Logout must continue if the future device contract is unavailable.
@@ -124,7 +117,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     } finally {
       await erase();
     }
-  }, [erase, session.accessToken]);
+  }, [authorizedRequest, erase, session.accessToken]);
 
   const value = useMemo<AuthContextValue>(() => ({ ...session, isRestoring, signIn, refresh, authorizedRequest, signOut }),
     [authorizedRequest, isRestoring, refresh, session, signIn, signOut]);
