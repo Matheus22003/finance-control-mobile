@@ -30,7 +30,14 @@ export type PushRegistrationOptions = {
   appVersion: string;
   onRoute(target: PushRouteTarget): void | Promise<void>;
   onHint?(notification?: unknown): void | Promise<void>;
+  onError?(reason: PushRegistrationFailure): void;
 };
+
+export type PushRegistrationFailure =
+  | 'unavailable'
+  | 'permission-denied'
+  | 'token-acquisition-failed'
+  | 'registration-failed';
 
 export type PushRegistration = {
   pushToken: string;
@@ -97,8 +104,22 @@ export function mapNotificationResponseToRoute(
 export async function initializePushNotifications(
   options: PushRegistrationOptions,
 ): Promise<PushRegistration | null> {
-  const pushToken = await getExpoPushToken();
-  if (!pushToken) return null;
+  if (!Device.isDevice) {
+    options.onError?.('unavailable');
+    return null;
+  }
+
+  let pushToken: string | null;
+  try {
+    pushToken = await getExpoPushToken();
+  } catch {
+    options.onError?.('token-acquisition-failed');
+    return null;
+  }
+  if (!pushToken) {
+    options.onError?.('permission-denied');
+    return null;
+  }
 
   const device: MobileDeviceRegistration = {
     installationId: options.installationId,
@@ -106,7 +127,12 @@ export async function initializePushNotifications(
     platform: options.platform,
     appVersion: options.appVersion,
   };
-  await registerMobileDevice(options.accessToken, device);
+  try {
+    await registerMobileDevice(options.accessToken, device);
+  } catch {
+    options.onError?.('registration-failed');
+    return null;
+  }
 
   const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
     void (async () => {

@@ -150,4 +150,56 @@ describe('initializePushNotifications', () => {
     expect(onRoute).toHaveBeenCalledWith({ pathname: '/(tabs)/debts' });
     expect(onHint).toHaveBeenCalledOnce();
   });
+
+  it('reports token acquisition failures without exposing the error or token', async () => {
+    const onError = vi.fn();
+    getExpoPushTokenAsync.mockRejectedValue(new Error('secret provider response'));
+
+    await expect(initializePushNotifications({
+      accessToken: 'access-token',
+      installationId: 'installation-id',
+      platform: 'android',
+      appVersion: '1.0.0',
+      onRoute: vi.fn(),
+      onError,
+    })).resolves.toBeNull();
+
+    expect(onError).toHaveBeenCalledWith('token-acquisition-failed');
+    expect(registerMobileDevice).not.toHaveBeenCalled();
+    expect(onError.mock.calls.flat()).not.toContain('secret provider response');
+  });
+
+  it('reports registration failures without exposing the request or server error', async () => {
+    const onError = vi.fn();
+    registerMobileDevice.mockRejectedValue(new Error('secret server response'));
+
+    await expect(initializePushNotifications({
+      accessToken: 'access-token',
+      installationId: 'installation-id',
+      platform: 'android',
+      appVersion: '1.0.0',
+      onRoute: vi.fn(),
+      onError,
+    })).resolves.toBeNull();
+
+    expect(onError).toHaveBeenCalledWith('registration-failed');
+    expect(onError.mock.calls.flat()).not.toContain('secret server response');
+  });
+
+  it('reports denied permission without attempting token acquisition', async () => {
+    const onError = vi.fn();
+    requestPermissionsAsync.mockResolvedValue({ granted: false, canAskAgain: false });
+
+    await expect(initializePushNotifications({
+      accessToken: 'access-token',
+      installationId: 'installation-id',
+      platform: 'android',
+      appVersion: '1.0.0',
+      onRoute: vi.fn(),
+      onError,
+    })).resolves.toBeNull();
+
+    expect(onError).toHaveBeenCalledWith('permission-denied');
+    expect(getExpoPushTokenAsync).not.toHaveBeenCalled();
+  });
 });
