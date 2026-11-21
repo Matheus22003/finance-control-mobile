@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "691165627314",
+    "project_id": "finance-control-mobile",
+    "storage_bucket": "finance-control-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:691165627314:android:7f61f5c9f5460ba06c5aab",
+        "android_client_info": {
+          "package_name": "com.matheus22003.financecontrol"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWMRF2bwOHE6g-UFBOQtT64aBVa-nAQdw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
