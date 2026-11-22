@@ -2,6 +2,13 @@ import { request } from '@/core/api/request';
 
 export const MOBILE_DEVICES_PATH = '/api/v1/notifications/mobile-devices';
 
+export type MobilePushTestResponse = {
+  configured: boolean;
+  deviceCount: number;
+  acceptedCount: number;
+  rejectedCount: number;
+};
+
 export type MobileDeviceRegistration = {
   installationId: string;
   expoPushToken: string;
@@ -31,4 +38,14 @@ export function unregisterMobileDevice(
     },
     accessToken,
   );
+}
+
+export function sendMobilePushTest(
+  accessToken: string,
+  message: { title: string; body: string; route?: string },
+): Promise<MobilePushTestResponse> {
+  return request<MobilePushTestResponse>(`${MOBILE_DEVICES_PATH}/test`, {
+    method: 'POST',
+    body: JSON.stringify(message),
+  }, accessToken);
 }
